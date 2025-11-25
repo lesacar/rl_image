@@ -2,3 +2,6 @@ vendor/*
 build/*
 build/
 build
+.cache/*
+.cache/
+.cache
