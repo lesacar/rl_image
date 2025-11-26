@@ -1,61 +1,69 @@
 #include "raylib.h"
-#include <format>
-#include <iostream>
-#include <print>
+#include "engine.hpp"
+#include <cstdlib>
+#include <exception>
+#include <stdexcept>
+#include <stdlib.h>
 #include <string>
-#include <utility>
 
 namespace global {
     bool windowShouldClose = false;
 }
 
-namespace engine {
-    // will be prepended to engine::log output
-    enum class log_level {
-        info,
-        warning,
-        error
-    };
-
-    // behaves like std::format (C++23)
-    // engine::log(engine::log_level::info, "some info");
-    // engine::log(engine::log_level::info, "some info about {}", x);
-    template<typename... Args>
-    void log(log_level level, const std::string_view str, Args&&... args) {
-
-        const std::string_view engine_name = "ENGINE";
-        switch (level) {
-            case log_level::info:    std::print("\033[90m"); break;
-            case log_level::warning: std::print("\033[93m"); break;
-            case log_level::error:   std::print("\033[91m"); break;
-        }
-
-        std::string_view level_str =
-            level == log_level::info    ? ": INFO: " :
-            level == log_level::warning ? ": WARNING: " :
-            ": ERROR: ";
-        std::println("{}{}{}\033[0m", engine_name, level_str, std::vformat(str, std::make_format_args(std::forward<Args>(args)...)));
-    }
-}
 
 int main() {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
-    InitWindow(screenWidth, screenHeight, "RL Image Project");
-    SetTargetFPS(60);
+    static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
+    // initialize window with safe resolution
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(640, 360, "Image Viewer");
+    engine::vec2 max_resolution{ GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor()) };
+    if (max_resolution.x == 0) {
+        engine::log(engine::log_level::error, "Monitor resolution was 0");
+        std::abort();
+    }
+
+    engine::vec2<int> windowSize{};
+
+    for (const auto value : engine::various_16_9_resolutions) {
+        if (std::abs(max_resolution.x) - std::abs(value.x) > 0 && std::abs(max_resolution.y) - std::abs(value.y) > 0) {
+            engine::log(engine::log_level::info, "Found resolution lower then display resolution");
+            windowSize.x = value.x;
+            windowSize.y = value.y;
+            break;
+        }
+    }
+
+    if (windowSize.x <= 0) {
+        engine::log(engine::log_level::error, "Couldn't find any possible resolution");
+        std::abort();
+    }
+
+    SetWindowPosition((max_resolution.x - windowSize.x)/2, (max_resolution.y - windowSize.y)/2);
+    SetWindowSize(windowSize.x, windowSize.y);
+
+
+    SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
 
 
     while (!global::windowShouldClose) {
         BeginDrawing();
-        
-        ClearBackground(RAYWHITE);
-        
-        DrawText("Raylib C++ template", 190, 200, 20, DARKGRAY);
+        if (IsWindowResized()) {
+            windowSize.x = GetScreenWidth();
+            windowSize.y = GetScreenHeight();
+            engine::log(engine::log_level::info, "Window was resized: {{{},{}}}", windowSize.x, windowSize.y);
+        }
+       
+        ClearBackground(BLACK);
+        std::string string_to_draw = "This is a centered test string";
+        // default raylib font needs spacing of 2, and DrawText() which uses the default font implicitly has spacing of fontsize/10
+        Vector2 string_dim = MeasureTextEx(GetFontDefault(), string_to_draw.c_str(), 20, 2);
+
+        DrawTextEx(GetFontDefault(), string_to_draw.c_str(), Vector2{(windowSize.x - string_dim.x)/2, (windowSize.y - string_dim.y)/2}, 20, 2, RAYWHITE);
         
         EndDrawing();
         if (WindowShouldClose()) {
             global::windowShouldClose = true;
-            engine::log(engine::log_level::info, "global variable has changed to {}", global::windowShouldClose);
+            engine::log(engine::log_level::info, "windowShouldClose: {}", global::windowShouldClose);
         }
     }
     
