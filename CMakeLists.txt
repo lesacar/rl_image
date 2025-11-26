@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(rl_image)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Generate compile_commands.json for tooling
@@ -22,6 +22,7 @@ FetchContent_Declare(
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build raylib as static library")
 
 # Populate raylib
+# TODO: this will compile raylib in DEBUG mode, don't forget to add option for RELEASE builds
 FetchContent_MakeAvailable(raylib)
 
 # Add executable
