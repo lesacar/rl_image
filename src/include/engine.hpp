@@ -29,6 +29,27 @@ namespace engine {
                 explicit constexpr vec2(const vec2<U>& u) noexcept : x(static_cast<T>(u.x)) , y(static_cast<T>(u.y)) {}
         };
 
+    class window {
+        public:
+            std::string name;
+            engine::vec2<int> size{};
+
+            window() = delete;
+            window(engine::vec2<int> size, std::string_view name);
+            window(std::string_view name);
+            ~window();
+
+            void pre_initialization();
+            void post_initialization();
+            void set_best_fit_resolution();
+            void set_resize_to(engine::vec2<int> newSize);
+            void center_to_monitor();
+            void resize_handler();
+
+            bool should_close();
+            void close();
+    };
+
     // this should always be descending, since it's used by an algorithm that expects sorted values
     inline constexpr std::array<vec2<int>, 6> various_16_9_resolutions =
      {{
