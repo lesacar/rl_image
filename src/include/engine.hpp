@@ -4,6 +4,11 @@
 #include <array>
 #include <type_traits>
 
+// global variables that will (potentially) be read by every single file
+// make sure to INLINE everything, 2 different translation units NEED to have the same variable
+namespace global {
+    inline bool windowShouldClose = false;
+}
 
 namespace engine {
 
@@ -25,7 +30,9 @@ namespace engine {
         };
 
     // this should always be descending, since it's used by an algorithm that expects sorted values
-    constexpr std::array<vec2<int>, 5> various_16_9_resolutions{{
+    inline constexpr std::array<vec2<int>, 6> various_16_9_resolutions =
+     {{
+        {2560,1440},
         {1920,1080},
         {1600,900},
         {1280,720},
@@ -33,7 +40,8 @@ namespace engine {
         {640,360},
     }};
 
-    // will be prepended to engine::log output
+
+       // will be prepended to engine::log output
     enum class log_level {
         info,
         warning,
