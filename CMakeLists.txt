@@ -4,6 +4,7 @@ project(rl_image)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(INC_DIR "src/include/")
 
 # Generate compile_commands.json for tooling
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -27,6 +28,7 @@ FetchContent_MakeAvailable(raylib)
 
 # Add executable
 add_executable(rl_image src/main.cpp)
+target_include_directories(rl_image PRIVATE ${INC_DIR})
 
 # Link raylib to our executable
 target_link_libraries(rl_image PRIVATE raylib)
