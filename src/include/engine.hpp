@@ -1,8 +1,11 @@
 #pragma once
+#include <cstddef>
+#include <string>
 #include <string_view>
 #include <print>
 #include <array>
 #include <type_traits>
+#include <vector>
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
@@ -30,6 +33,8 @@ namespace engine {
         };
 
     class window {
+        private:
+            std::vector<std::string_view> cli_args;
         public:
             std::string name;
             engine::vec2<int> size{};
@@ -40,11 +45,15 @@ namespace engine {
             ~window();
 
             void pre_initialization();
+            std::vector<std::string_view>& get_cli_args();
             void post_initialization();
             void set_best_fit_resolution();
             void set_resize_to(engine::vec2<int> newSize);
             void center_to_monitor();
             void resize_handler();
+
+            // pass argc and argv into the window
+            void append_cli_args(size_t argc, const char* argv[]);
 
             bool should_close();
             void close();

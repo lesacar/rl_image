@@ -27,7 +27,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build raylib as static library")
 FetchContent_MakeAvailable(raylib)
 
 # Add executable
-add_executable(rl_image src/main.cpp)
+add_executable(rl_image src/main.cpp src/engine.cpp)
 target_include_directories(rl_image PRIVATE ${INC_DIR})
 
 # Link raylib to our executable
