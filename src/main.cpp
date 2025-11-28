@@ -1,6 +1,6 @@
 #include "raylib.h"
-#include <chrono>
-#include <cstddef>
+#include "timer.hpp"
+#include <string_view>
 
 #pragma warning(push, 0)
 #pragma warning(disable: 4996 4267 4244 4005 4018 4101 4189 4456 4457 4458 4459 4505 4701 4703)
@@ -10,31 +10,9 @@
 
 #include <engine.hpp>
 
-#include <string>
-#include <string_view>
-
-
-class timer {
-private:
-    std::chrono::high_resolution_clock clock;
-    std::chrono::high_resolution_clock::time_point start;
-    size_t counter;
-public:
-    timer() : counter(0) {
-        start = clock.now();
-    }
-    void elapsed_ms() {
-        auto var = clock.now() - start;
-        auto var2 = std::chrono::duration_cast<std::chrono::milliseconds>(var);
-        counter++;
-        engine::log(engine::log_level::info, "Timer ({}): {}", counter, var2);
-    }
-    ~timer() {}
-};
-
 int main(int argc, const char* argv[]) {
     static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
-    timer timmy;
+    engine::timer timmy;
     SetTraceLogLevel(LOG_WARNING);
 
     timmy.elapsed_ms();
@@ -52,6 +30,8 @@ int main(int argc, const char* argv[]) {
         ClearBackground(BLACK);
 
         DrawTexture(img.get_tex(), 0, 0, WHITE);
+        DrawFPS(0, 0);
+
         
         EndDrawing();
     }
