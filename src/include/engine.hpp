@@ -6,11 +6,15 @@
 #include <array>
 #include <type_traits>
 #include <vector>
+#include <raylib.h>
+
+
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
 namespace global {
     inline bool windowShouldClose = false;
+    inline std::array<std::string_view, 2> image_filetypes = { ".png", ".jpg" };
 }
 
 namespace engine {
@@ -61,17 +65,17 @@ namespace engine {
 
     // this should always be descending, since it's used by an algorithm that expects sorted values
     inline constexpr std::array<vec2<int>, 6> various_16_9_resolutions =
-     {{
-        {2560,1440},
-        {1920,1080},
-        {1600,900},
-        {1280,720},
-        {960,540},
-        {640,360},
-    }};
+    {{
+         {2560,1440},
+         {1920,1080},
+         {1600,900},
+         {1280,720},
+         {960,540},
+         {640,360},
+     }};
 
 
-       // will be prepended to engine::log output
+    // will be prepended to engine::log output
     enum class log_level {
         info,
         warning,
@@ -97,4 +101,22 @@ namespace engine {
                 ": ERROR: ";
             std::println("{}{}{}\033[0m", engine_name, level_str, std::vformat(str, std::make_format_args(std::forward<Args>(args)...)));
         }
+
+    bool is_supported_image_extension(std::string_view img_path);
+    [[nodiscard("\'Tried to discard image\'")]] Image image_was_provided(window& w);
+
+    class working_image {
+        private:
+            Image img;
+            Texture2D img_tex;
+        public:
+            Texture2D get_tex();
+            // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
+            void set_image(Image image);
+            working_image() = delete;
+            working_image(engine::window& w);
+            ~working_image();
+    };
+
+    // namespace engine
 }
