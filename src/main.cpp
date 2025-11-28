@@ -1,5 +1,6 @@
 #include "raylib.h"
-#include <cstdlib>
+#include <chrono>
+#include <cstddef>
 
 #pragma warning(push, 0)
 #pragma warning(disable: 4996 4267 4244 4005 4018 4101 4189 4456 4457 4458 4459 4505 4701 4703)
@@ -13,26 +14,34 @@
 #include <string_view>
 
 
-
-/* 
-[[nodiscard("\'Tried to discard GPU image texture\'")]] Texture2D texture_from_img_or_crash(engine::window& w)
-{
-    Texture2D tex = {0};
-    tex = LoadTextureFromImage(image_was_provided(w));
-    if (!IsTextureValid(tex)) {
-        engine::log(engine::log_level::error, "Couldn't create GPU texture from image, check GPU drivers.");
-        std::exit(-1);
+class timer {
+private:
+    std::chrono::high_resolution_clock clock;
+    std::chrono::high_resolution_clock::time_point start;
+    size_t counter;
+public:
+    timer() : counter(0) {
+        start = clock.now();
     }
-    return tex;
-}
-*/
-
+    void elapsed_ms() {
+        auto var = clock.now() - start;
+        auto var2 = std::chrono::duration_cast<std::chrono::milliseconds>(var);
+        counter++;
+        engine::log(engine::log_level::info, "Timer ({}): {}", counter, var2);
+    }
+    ~timer() {}
+};
 
 int main(int argc, const char* argv[]) {
     static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
+    timer timmy;
+    SetTraceLogLevel(LOG_WARNING);
 
+    timmy.elapsed_ms();
     engine::window window{"Image Viewer"};
+    timmy.elapsed_ms();
     window.append_cli_args(argc, argv);
+    SetTargetFPS(0);
 
     // engine::working_image img;
     engine::working_image img(window);
