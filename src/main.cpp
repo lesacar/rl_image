@@ -12,7 +12,7 @@
 
 int main(int argc, const char* argv[]) {
     static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
-    engine::timer timmy;
+    engine::timer timmy{true};
     SetTraceLogLevel(LOG_WARNING);
 
     timmy.elapsed_ms();
