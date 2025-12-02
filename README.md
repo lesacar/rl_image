@@ -8,4 +8,8 @@ larger then GPU texsize limit (usually 16384x16384) and smaller then stb_image l
 2) add basic editing features like lines, hold click to draw, rotate (only 90degree), circles, ...
 3) if no image was supplied, add a file picker menu
 4) try to load stuff other then OpenGL on a different thread, there isn't much here, a couple milliseconds saved at most
-```cmake -DCMAKE_C_COMPILER="C:\Program Files\clang+llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\clang+llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"```
+
+## Generate build folder
+```cmake -DCMAKE_BUILD_TYPE=Release -S . -B build```
+## Compile the code
+```cmake --build build --config Release```
