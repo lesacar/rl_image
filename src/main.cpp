@@ -1,6 +1,5 @@
 #include "raylib.h"
 #include "timer.hpp"
-#include <string_view>
 
 #pragma warning(push, 0)
 #pragma warning(disable: 4996 4267 4244 4005 4018 4101 4189 4456 4457 4458 4459 4505 4701 4703)

@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 4.2) # needed for VS 2026
 project(rl_image)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(INC_DIR "src/include/")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -27,6 +25,8 @@ set(SUPPORT_FILEFORMAT_JPG ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
 add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp)
+# target_compile_features(rl_image PRIVATE cxx_std_23)
+set_target_properties(rl_image PROPERTIES CXX_STANDARD 23 CXX_EXTENSIONS OFF)
 
 if(MSVC)
     target_compile_options(rl_image PRIVATE /arch:AVX2 /O2 /W4)

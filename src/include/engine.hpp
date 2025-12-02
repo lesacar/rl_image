@@ -1,14 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <string>
-#include <string_view>
-#include <print>
-#include <array>
-#include <type_traits>
-#include <vector>
 #include <raylib.h>
-
-
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
@@ -19,9 +12,7 @@ namespace global {
 
 namespace engine {
 
-    template <typename T>
-        // only allow intereger or fractional numbers (exclude bool from arithmetic pool)
-        concept number = std::is_arithmetic_v<T> && !std::same_as<std::remove_cv_t<T>, bool>;
+    template <typename T> concept number = std::is_arithmetic_v<T> && !std::same_as<std::remove_cv_t<T>, bool>;
     // number is now any arithmetic type except bool (int, float, size_t, double, uint8_t, ...)
     template <number T>
         struct vec2 {

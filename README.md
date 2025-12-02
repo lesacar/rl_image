@@ -9,6 +9,8 @@ larger then GPU texsize limit (usually 16384x16384) and smaller then stb_image l
 3) if no image was supplied, add a file picker menu
 4) try to load stuff other then OpenGL on a different thread, there isn't much here, a couple milliseconds saved at most
 
+## Dependencies
+git, cmake4.2 (4.2 is a hard requirement since I use VS 2026)
 ## Generate build folder
 ```cmake -DCMAKE_BUILD_TYPE=Release -S . -B build```
 ## Compile the code
