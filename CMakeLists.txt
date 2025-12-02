@@ -26,10 +26,9 @@ FetchContent_MakeAvailable(raylib)
 
 add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp)
 # target_compile_features(rl_image PRIVATE cxx_std_23)
-set_target_properties(rl_image PROPERTIES CXX_STANDARD 23 CXX_EXTENSIONS OFF)
 
 if(MSVC)
-    target_compile_options(rl_image PRIVATE /arch:AVX2 /O2 /W4)
+    target_compile_options(rl_image PRIVATE /arch:AVX2 /O2 /W4 /std:c++23preview)
 elseif(WIN32)
     message( FATAL_ERROR "Unsupported compiler for WIN32, consider MSVC. Aborting..." )
 else()

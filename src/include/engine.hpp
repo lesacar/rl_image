@@ -1,7 +1,11 @@
 #pragma once
 #include <cstddef>
 #include <string>
+#include <print>
 #include <raylib.h>
+#include <string_view>
+#include <array>
+#include <vector>
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable

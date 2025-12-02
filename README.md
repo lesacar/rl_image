@@ -9,6 +9,9 @@ larger then GPU texsize limit (usually 16384x16384) and smaller then stb_image l
 3) if no image was supplied, add a file picker menu
 4) try to load stuff other then OpenGL on a different thread, there isn't much here, a couple milliseconds saved at most
 
+
+#### TODO: stop using windows for development, MSVC hates compile_commands.json, MSbuild is garbage, the compiler flags always needs edge case exceptions, putting\
+CXX_STANDARD 23 from cmake seems to have no effect, continue development on linux with g++ or clang++
 ## Dependencies
 git, cmake4.2 (4.2 is a hard requirement since I use VS 2026)
 ## Generate build folder

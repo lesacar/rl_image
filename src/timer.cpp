@@ -1,6 +1,6 @@
 #include "timer.hpp"
 #include "engine.hpp"
-#include <print>
+#include <chrono>
 
 namespace engine {
     timer::timer() : counter(0), start(clock.now()) {}
