@@ -1,0 +1,5 @@
+-Isrc/include
+-Ibuild/_deps/raylib-src/src
+-Wall
+-Wextra
+-std=c++23
