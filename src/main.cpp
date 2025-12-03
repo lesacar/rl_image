@@ -11,7 +11,7 @@
 
 int main(int argc, const char* argv[]) {
     static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
-    engine::timer timmy{true};
+    engine::timer timmy{false};
     SetTraceLogLevel(LOG_WARNING);
 
     timmy.elapsed_ms();
@@ -27,8 +27,12 @@ int main(int argc, const char* argv[]) {
         BeginDrawing();
         window.resize_handler();
         ClearBackground(BLACK);
-
-        DrawTexture(img.get_tex(), 0, 0, WHITE);
+        if (IsTextureValid(img.get_tex())) {
+            DrawTexture(img.get_tex(), 0, 0, WHITE);
+        } else { // no image selected
+            Rectangle rect = {0.0f, 0.0f, static_cast<float>(window.size.x), static_cast<float>(window.size.y)};
+            GuiDrawText("Click to choose an image", rect, 0, WHITE);
+        }
         DrawFPS(0, 0);
 
         

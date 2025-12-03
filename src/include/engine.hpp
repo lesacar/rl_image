@@ -15,7 +15,6 @@ namespace global {
 }
 
 namespace engine {
-
     template <typename T> concept number = std::is_arithmetic_v<T> && !std::same_as<std::remove_cv_t<T>, bool>;
     // number is now any arithmetic type except bool (int, float, size_t, double, uint8_t, ...)
     template <number T>
@@ -34,6 +33,7 @@ namespace engine {
     class window {
         private:
             std::vector<std::string_view> cli_args;
+            bool has_working_image = false;
         public:
             std::string name;
             engine::vec2<int> size{};
@@ -50,6 +50,7 @@ namespace engine {
             void set_resize_to(engine::vec2<int> newSize);
             void center_to_monitor();
             void resize_handler();
+            bool is_image_present();
 
             // pass argc and argv into the window
             void append_cli_args(size_t argc, const char* argv[]);
@@ -104,6 +105,7 @@ namespace engine {
         private:
             Image img;
             Texture2D img_tex;
+            engine::window& w;
         public:
             Texture2D get_tex();
             // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail

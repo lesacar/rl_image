@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <string_view>
 #include <tuple>
+#include <utility>
 
 namespace engine {
 
@@ -114,6 +115,10 @@ namespace engine {
         CloseWindow();
     }
 
+    bool window::is_image_present() {
+        return has_working_image;
+    }
+
     bool is_supported_image_extension(std::string_view img_path) {
         for (auto ft : global::image_filetypes) {
             if (IsFileExtension(img_path.data(), ft.data())) {
@@ -125,23 +130,34 @@ namespace engine {
 
     Image image_was_provided(window& w)
     {
-        Image img = {0};
+        Image img = {};
         if (w.get_cli_args().size() > 1) {
             img = LoadImage(w.get_cli_args().at(1).data());
         }
 
         if (!IsImageValid(img)) {
-            engine::log(engine::log_level::error, "No image provided, exiting...");
-            std::exit(-1);
+            engine::log(engine::log_level::info, "No image provided from commandline");
         }
 
         return img;
     }
 
 
-    Texture2D working_image::get_tex() { return img_tex; }
+    Texture2D working_image::get_tex() { 
+        if (!w.is_image_present()) {
+            return img_tex;
+        }
+        if (!IsTextureValid(img_tex)) {
+            log(log_level::error, "Returned invalid texture of working image");
+            log(log_level::error, "C++: window.is_image_present() returned true but the texture was invalid, unreachable...");
+            std::unreachable();
+        }
+        return img_tex;
+    }
+
     // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
     void working_image::set_image(Image image) {
+        UnloadImage(img);
         img = image;
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::error, "Updating working_image failed. ATTEMPTED TO UPDATE WITH:\nPIXEL_FORMAT: {}\nRESOLUTION: ({}x{})", img.format, img.width, img.height);
@@ -149,15 +165,23 @@ namespace engine {
         }
     }
 
-    working_image::working_image(engine::window& w) {
-        img = engine::image_was_provided(w);
+    working_image::working_image(engine::window& w) : w(w) {
+        img = image_was_provided(w);
+        if (!IsImageValid(img)) {
+            engine::log(engine::log_level::info, "engine::working_image class doesn't have a valid image loaded");
+            return;
+        }
         img_tex = LoadTextureFromImage(img);
         if (!IsTextureValid(img_tex)) {
-            engine::log(engine::log_level::error, "Couldn't create GPU texture from image, check GPU drivers.");
-            std::exit(-1);
+            engine::log(engine::log_level::error, "Couldn't create GPU texture from image");
         }
     }
-    working_image::~working_image() { UnloadImage(img); UnloadTexture(img_tex); }
-
-
+    working_image::~working_image() { 
+        if (IsImageValid(img)) {
+            UnloadImage(img);
+        }
+        if (IsTextureValid(img_tex)) {
+            UnloadTexture(img_tex);
+        }
+    }
 }
