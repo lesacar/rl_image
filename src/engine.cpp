@@ -85,9 +85,9 @@ namespace engine {
             // have to do it like this because MSVC can't handle an rvalue and lvalue& in the same make_format_args call
             // cli_args.size() is a rvalue (size_t)  
             // cli_args.at(1) is a lvalue reference (std::string_view&)
-            auto argc = cli_args.size();
-            auto argv1 = cli_args.at(1);
-            log(log_level::info, "argc: {} argv: {}", argc, argv1);
+            auto _argc = cli_args.size();
+            auto _argv1 = cli_args.at(1);
+            log(log_level::info, "argc: {} argv: {}", _argc, _argv1);
         }
     }
 
