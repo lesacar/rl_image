@@ -1,11 +1,11 @@
 #pragma once
-#include <cstddef>
-#include <string>
 #include <print>
 #include <raylib.h>
 #include <string_view>
 #include <array>
-#include <vector>
+#include <common_types.h>
+#include <window.hpp>
+#include <wimage.hpp>
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
@@ -15,50 +15,6 @@ namespace global {
 }
 
 namespace engine {
-    template <typename T> concept number = std::is_arithmetic_v<T> && !std::same_as<std::remove_cv_t<T>, bool>;
-    // number is now any arithmetic type except bool (int, float, size_t, double, uint8_t, ...)
-    template <number T>
-        struct vec2 {
-            T x{};
-            T y{};
-            // will generate a constructor that calls the above x{} and y{} value zero-initializtion
-            constexpr vec2() noexcept = default;
-            // self-explanatory
-            constexpr vec2(T x, T y) noexcept : x(x), y(y) {}
-            // allow type-safe casting to other number types (vec2<float> v = static_cast<float>vec2<int>{1,2})
-            template <number U>
-                explicit constexpr vec2(const vec2<U>& u) noexcept : x(static_cast<T>(u.x)) , y(static_cast<T>(u.y)) {}
-        };
-
-    class window {
-        private:
-            std::vector<std::string_view> cli_args;
-            bool has_working_image = false;
-        public:
-            std::string name;
-            engine::vec2<int> size{};
-
-            window() = delete;
-            window(engine::vec2<int> size, std::string_view name);
-            window(std::string_view name);
-            ~window();
-
-            void pre_initialization();
-            std::vector<std::string_view>& get_cli_args();
-            void post_initialization();
-            void set_best_fit_resolution();
-            void set_resize_to(engine::vec2<int> newSize);
-            void center_to_monitor();
-            void resize_handler();
-            bool is_image_present();
-
-            // pass argc and argv into the window
-            void append_cli_args(size_t argc, const char* argv[]);
-
-            bool should_close();
-            void close();
-    };
-
     // this should always be descending, since it's used by an algorithm that expects sorted values
     inline constexpr std::array<vec2<int>, 6> various_16_9_resolutions =
     {{
@@ -100,20 +56,4 @@ namespace engine {
 
     bool is_supported_image_extension(std::string_view img_path);
     [[nodiscard("\'Tried to discard image\'")]] Image image_was_provided(window& w);
-
-    class working_image {
-        private:
-            Image img;
-            Texture2D img_tex;
-            engine::window& w;
-        public:
-            Texture2D get_tex();
-            // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
-            void set_image(Image image);
-            working_image() = delete;
-            working_image(engine::window& w);
-            ~working_image();
-    };
-
-    // namespace engine
-}
+}   // namespace engine
