@@ -25,14 +25,24 @@ set(SUPPORT_FILEFORMAT_JPG ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
 add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp src/window.cpp src/wimage.cpp)
-# target_compile_features(rl_image PRIVATE cxx_std_23)
 
+# need C++26 for <debugging>, and lvalue references in make_format_args
 if(MSVC)
-    target_compile_options(rl_image PRIVATE /arch:AVX2 /O2 /W4 /std:c++23preview)
+    # c++latest should be C++26
+    target_compile_options(rl_image PRIVATE
+        /arch:AVX2 /W4 /std:c++latest
+        $<$<CONFIG:Release>:/O2>
+        $<$<CONFIG:Debug>:/Od /DEBUG>
+    )
 elseif(WIN32)
     message( FATAL_ERROR "Unsupported compiler for WIN32, consider MSVC. Aborting..." )
 else()
-    target_compile_options(rl_image PRIVATE -O3 -mavx2 -Wall -Wextra)
+    # c++2c should be c++26
+    target_compile_options(rl_image PRIVATE
+        -mavx2 -Wall -Wextra -std=c++2c
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:Debug>:-O0 -g>
+    )
 endif()
 
 target_include_directories(rl_image PRIVATE ${INC_DIR})

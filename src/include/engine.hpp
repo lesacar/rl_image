@@ -51,7 +51,7 @@ namespace engine {
                 level == log_level::info    ? ": INFO: " :
                 level == log_level::warning ? ": WARNING: " :
                 ": ERROR: ";
-            std::println("{}{}{}\033[0m", engine_name, level_str, std::vformat(str, std::make_format_args(std::forward<Args>(args)...)));
+            std::println("{}{}{}\033[0m", engine_name, level_str, std::vformat(str, std::make_format_args(Args(args)...)));
         }
 
     bool is_supported_image_extension(std::string_view img_path);
