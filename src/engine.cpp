@@ -1,6 +1,7 @@
 #include <engine.hpp>
 #include <raylib.h>
 #include <string_view>
+#include <raymath.h>
 
 namespace engine {
     bool is_supported_image_extension(std::string_view img_path) {
@@ -25,4 +26,11 @@ namespace engine {
 
         return img;
     }
+
+    void DrawTextureMidpoint(Texture2D tex, Vector2 point, float rotation) {
+        Rectangle texture = Rectangle{0.0f, 0.0f, static_cast<float>(tex.width), static_cast<float>(tex.height)};
+        Rectangle dst = Rectangle{point.x-tex.width/2.0f, point.y-tex.height/2.0f, static_cast<float>(tex.width), static_cast<float>(tex.height)};
+        DrawTexturePro(tex, texture, dst, Vector2Zero(), rotation, WHITE);
+    }
+
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include "window.hpp"
+#include "raylib.h"
 #include <engine.hpp>
 
 namespace engine {
@@ -112,5 +114,11 @@ namespace engine {
 
     bool window::is_image_present() {
         return has_working_image;
+    }
+    void window::set_image_true() {
+        has_working_image = true;
+    }
+    void window::set_image_false() {
+        has_working_image = false;
     }
 }

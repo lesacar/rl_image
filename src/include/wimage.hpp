@@ -8,9 +8,11 @@ namespace engine {
             Image img;
             Texture2D img_tex;
             engine::window& w;
+            bool image_too_big_for_gpu = false;
         public:
             Texture2D get_tex();
-            // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
+            Image get_image();
+            // after modifying the image externaly (e.g. rotating), save the updated version, will also try to update the texture
             void set_image(Image image);
             working_image() = delete;
             working_image(engine::window& w);
