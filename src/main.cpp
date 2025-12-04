@@ -88,12 +88,9 @@ int main(int argc, const char* argv[]) {
 
 
             engine::DrawTextureMidpoint(img.get_tex(), Vector2Zero(), rot);
-            Vector2 pos = Vector2{(float)img.get_tex().width, (float)img.get_tex().height};
-            DrawTexture(img.get_tex(), 0, 0, WHITE);
-            DrawTextureEx(img.get_tex(), pos, 0.0f, 1.0f, WHITE);
             EndMode2D();
         } else { // no image selected
-
+            // draw some kind of file picker for an image or ask the user to dragndrop
         }
         DrawFPS(0, 0);
     }

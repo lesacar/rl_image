@@ -1,21 +1,21 @@
-#pragma once
 #include "window.hpp"
 #include "raylib.h"
 #include <engine.hpp>
 
 namespace engine {
-    window::window(vec2<int> size, std::string_view name) : size(size), name(name)
+    window::window(vec2<int> size, std::string_view name) : name(name), size(size)
     {
+        memset(&cam, 0, sizeof(cam));
         pre_initialization();
         InitWindow(size.x, size.y, name.data());
         post_initialization();
     }
 
     // auto set resolution
-    window::window(std::string_view name) : name(name)
+    window::window(std::string_view name) : name(name), size{640, 360}
     {
+        memset(&cam, 0, sizeof(cam));
         pre_initialization();
-        // init with safe size first
         InitWindow(640, 360, name.data());
         set_best_fit_resolution();
         post_initialization();
@@ -50,7 +50,7 @@ namespace engine {
 
         if (size.x <= 0 || size.y <= 0) {
             log(log_level::error, "Couldn't find any possible resolution");
-            std::abort();
+            size = {640, 360};
         }
 
         center_to_monitor();

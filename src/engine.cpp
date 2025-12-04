@@ -5,6 +5,7 @@
 
 namespace engine {
     bool is_supported_image_extension(std::string_view img_path) {
+        if (img_path.empty()) return false;
         for (auto ft : global::image_filetypes) {
             if (IsFileExtension(img_path.data(), ft.data())) {
                 return true;
@@ -22,6 +23,8 @@ namespace engine {
 
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::info, "No image provided from commandline");
+            UnloadImage(img);
+            img = {};
         }
 
         return img;

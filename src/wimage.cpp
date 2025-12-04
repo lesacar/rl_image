@@ -1,11 +1,11 @@
-#pragma once
 #include "raylib.h"
 #include <engine.hpp>
 
 namespace engine {
-    Texture2D working_image::get_tex() { 
+    Texture2D working_image::get_tex() {
         if (!w.is_image_present()) {
-            return img_tex;
+            Texture2D empty{};
+            return empty;
         }
         if (!IsTextureValid(img_tex)) {
             log(log_level::error, "Returned invalid texture of working image");
@@ -15,9 +15,10 @@ namespace engine {
         return img_tex;
     }
 
-    Image working_image::get_image() { 
+    Image working_image::get_image() {
         if (!w.is_image_present()) {
-            return img;
+            Image empty{};
+            return empty;
         }
         if (!IsImageValid(img)) {
             log(log_level::error, "Returned invalid image of working image");
@@ -49,6 +50,8 @@ namespace engine {
         img = image_was_provided(w);
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::info, "engine::working_image class doesn't have a valid image loaded");
+            img = {};
+            img_tex = {};
             return;
         }
         img_tex = LoadTextureFromImage(img);
@@ -56,6 +59,7 @@ namespace engine {
             engine::log(engine::log_level::error, "Couldn't create GPU texture from image");
             image_too_big_for_gpu = true;
         }
+        w.set_image_true();
     }
     working_image::~working_image() { 
         if (IsImageValid(img)) {
