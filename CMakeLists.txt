@@ -24,7 +24,7 @@ set(SUPPORT_FILEFORMAT_JPG ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(raylib)
 
-add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp)
+add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp src/window.cpp src/wimage.cpp)
 # target_compile_features(rl_image PRIVATE cxx_std_23)
 
 if(MSVC)
