@@ -56,6 +56,8 @@ int main(int argc, const char* argv[]) {
     window.cam.offset = Vector2Divide(ws, halfer);
     float rot = 0.0f;
 
+    engine::log(engine::log_level::info, "window.cam.rotation: {}", window.cam.rotation);
+
 
     while (!window.should_close()) {
         Frame frame(window);

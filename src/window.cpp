@@ -1,6 +1,7 @@
 #include "window.hpp"
 #include "raylib.h"
 #include <engine.hpp>
+#include <cstring>
 
 namespace engine {
     window::window(vec2<int> size, std::string_view name) : name(name), size(size)
