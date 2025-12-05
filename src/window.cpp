@@ -27,6 +27,7 @@ namespace engine {
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     }
     void window::post_initialization() {
+        SetExitKey(KEY_NULL);
         SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
     }
 

@@ -2,7 +2,11 @@
 #include "timer.hpp"
 #include "window.hpp"
 #include <algorithm>
+#include <cmath>
+#include <ranges>
 #include <raymath.h>
+#include <string>
+#include <string_view>
 
 #pragma warning(push, 0)
 #pragma warning(disable: 4996 4267 4244 4005 4018 4101 4189 4456 4457 4458 4459 4505 4701 4703)
@@ -75,6 +79,7 @@ int main(int argc, const char* argv[]) {
                 window.cam.target.x -= GetMouseDelta().x / window.cam.zoom;
                 window.cam.target.y -= GetMouseDelta().y / window.cam.zoom;
                 engine::log(engine::log_level::info, "{},{}", window.cam.target.x, window.cam.target.y);
+
             }
             if (mousey_d != 0) {
                 engine::log(engine::log_level::info, "{}", window.cam.zoom);
@@ -86,6 +91,39 @@ int main(int argc, const char* argv[]) {
             if (IsKeyDown(KEY_DOWN)) {
                 rot -= 1.0f;
                 engine::log(engine::log_level::info, "{}", rot);
+            }
+
+            FilePathList list = {};
+            std::string droppedFile;
+            if (IsFileDropped()) {
+                list = LoadDroppedFiles();
+                if (list.count > 0 && list.paths != NULL) {
+                    droppedFile = list.paths[0];
+                    if (FileExists(droppedFile.c_str())) {
+                        Image loaded = LoadImage(droppedFile.c_str());
+                        img.set_image(loaded);
+                    }
+                }
+            }
+
+            if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)) {
+                // either an image is directly in the clipboard, so clip_img will be valid
+                // or a filepath is in the clipboard, so clip_img will first be invalid, then made valid later, no overwriting should happen in the FileExists check
+                Image clip_img = GetClipboardImage();
+                const char* p_clipboard_text = GetClipboardText();
+                std::string_view ctext;
+                if (p_clipboard_text) {
+                    ctext = p_clipboard_text;
+                    if (FileExists(ctext.data())) {
+                        clip_img = LoadImage(ctext.data());
+                    }
+                }
+                if (!ctext.empty()) {
+                    engine::log(engine::log_level::info, "Clipboard text: {}", ctext);
+                }
+                if (IsImageValid(clip_img)) {
+                    img.set_image(clip_img);
+                }
             }
 
 
