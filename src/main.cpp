@@ -72,8 +72,8 @@ int main(int argc, const char* argv[]) {
             window.cam.zoom = std::clamp(window.cam.zoom, 0.1f, 10.0f);
             BeginMode2D(window.cam);
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-                window.cam.target.x += GetMouseDelta().x;
-                window.cam.target.y += GetMouseDelta().y;
+                window.cam.target.x -= GetMouseDelta().x / window.cam.zoom;
+                window.cam.target.y -= GetMouseDelta().y / window.cam.zoom;
                 engine::log(engine::log_level::info, "{},{}", window.cam.target.x, window.cam.target.y);
             }
             if (mousey_d != 0) {

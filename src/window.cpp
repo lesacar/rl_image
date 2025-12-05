@@ -6,7 +6,7 @@
 namespace engine {
     window::window(vec2<int> size, std::string_view name) : name(name), size(size)
     {
-        memset(&cam, 0, sizeof(cam));
+        // memset(&cam, 0, sizeof(cam));
         pre_initialization();
         InitWindow(size.x, size.y, name.data());
         post_initialization();
@@ -15,7 +15,7 @@ namespace engine {
     // auto set resolution
     window::window(std::string_view name) : name(name), size{640, 360}
     {
-        memset(&cam, 0, sizeof(cam));
+        // memset(&cam, 0, sizeof(cam));
         pre_initialization();
         InitWindow(640, 360, name.data());
         set_best_fit_resolution();

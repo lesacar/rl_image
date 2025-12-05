@@ -15,7 +15,7 @@ namespace engine {
             Vector2 mouse_pos_current_frame;
             std::string name;
             engine::vec2<int> size{};
-            Camera2D cam;
+            Camera2D cam = {};
 
             window() = delete;
             window(engine::vec2<int> size, std::string_view name);
