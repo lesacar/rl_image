@@ -3,6 +3,7 @@
 #include "window.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <ranges>
 #include <raymath.h>
 #include <string>
@@ -38,6 +39,23 @@ Frame::~Frame() {
     EndDrawing();
 }
 
+// process every file drag and dropped to the window, but only extract the first valid filepath, ignore all the rest, use only when you expect only one file
+std::string first_dropped_filepath() {
+    if (IsFileDropped()) {
+        FilePathList list = {};
+        std::string droppedFile;
+        list = LoadDroppedFiles();
+        if (list.count > 0 && list.paths != NULL) {
+            droppedFile = list.paths[0];
+            if (FileExists(droppedFile.c_str())) {
+                return droppedFile;
+            }
+        }
+        UnloadDroppedFiles(list);
+    }
+    return std::string{};
+}
+
 int main(int argc, const char* argv[]) {
     static_assert(sizeof(engine::vec2<float>) == sizeof(Vector2), "raylib Vector2 is not the same as engine::vec2<float>");
     engine::timer timmy{false};
@@ -69,17 +87,15 @@ int main(int argc, const char* argv[]) {
         ws.y = static_cast<float>(window.size.y);
 
         if (IsTextureValid(img.get_tex())) {
-            float mousey_d = GetMouseWheelMoveV().y * 2;
-            float sign = (mousey_d >= 0) ? 1.0f : -1.0f;
-            float final_mousey = sign * ((mousey_d*mousey_d) * GetFrameTime());
-            window.cam.zoom += window.cam.zoom*final_mousey;
+            // 0.1f is the strength of the zoom, since the mouse wheel move is a fixed number, e.g. every scroll know could be "2", some mice with more knobs might report it as 0.5 
+            float mousey_d = GetMouseWheelMoveV().y * 0.1f;
+            window.cam.zoom += window.cam.zoom*mousey_d;
             window.cam.zoom = std::clamp(window.cam.zoom, 0.1f, 10.0f);
             BeginMode2D(window.cam);
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
                 window.cam.target.x -= GetMouseDelta().x / window.cam.zoom;
                 window.cam.target.y -= GetMouseDelta().y / window.cam.zoom;
-                engine::log(engine::log_level::info, "{},{}", window.cam.target.x, window.cam.target.y);
-
+                // engine::log(engine::log_level::info, "{},{}", window.cam.target.x, window.cam.target.y);
             }
             if (mousey_d != 0) {
                 engine::log(engine::log_level::info, "{}", window.cam.zoom);
@@ -93,16 +109,20 @@ int main(int argc, const char* argv[]) {
                 engine::log(engine::log_level::info, "{}", rot);
             }
 
-            FilePathList list = {};
-            std::string droppedFile;
-            if (IsFileDropped()) {
-                list = LoadDroppedFiles();
-                if (list.count > 0 && list.paths != NULL) {
-                    droppedFile = list.paths[0];
-                    if (FileExists(droppedFile.c_str())) {
-                        Image loaded = LoadImage(droppedFile.c_str());
-                        img.set_image(loaded);
-                    }
+
+            // if an image has been drag and dropped to the window, set it, if the dropped file wasn't a valid image, the old image will also be removed, black screen until valid image is provided
+            std::string dropped_filepath = first_dropped_filepath();
+            if (!dropped_filepath.empty()) {
+                Image loaded = LoadImage(dropped_filepath.c_str());
+                img.set_image(loaded);           
+            }
+
+            if (IsKeyPressed(KEY_F2)) {
+                if (IsWindowState(FLAG_VSYNC_HINT)) {
+                    ClearWindowState(FLAG_VSYNC_HINT);
+                }
+                else {
+                    SetWindowState(FLAG_VSYNC_HINT);
                 }
             }
 

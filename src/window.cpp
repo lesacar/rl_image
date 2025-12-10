@@ -24,11 +24,12 @@ namespace engine {
 
 
     void window::pre_initialization() {
-        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+        SetConfigFlags(FLAG_WINDOW_RESIZABLE|FLAG_VSYNC_HINT);
     }
     void window::post_initialization() {
         SetExitKey(KEY_NULL);
-        SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
+        // no need for targetFPS if we only use VSync on/off instead
+        // SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
     }
 
     // set resolution to biggest possible standardized resolution that isn't native (1600x900 on 1080p)

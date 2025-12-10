@@ -33,6 +33,8 @@ namespace engine {
     void working_image::set_image(Image image) {
         UnloadImage(img);
         img = image;
+        // also unload the temporary image to not have a memory leak
+        UnloadImage(image);
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::error, "Updating working_image failed. ATTEMPTED TO UPDATE WITH:\nPIXEL_FORMAT: {}\nRESOLUTION: ({}x{})", img.format, img.width, img.height);
         }
