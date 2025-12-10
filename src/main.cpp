@@ -48,8 +48,8 @@ std::string first_dropped_filepath() {
         FilePathList list = {};
         std::string droppedFile;
         list = LoadDroppedFiles();
-        engine::log(engine::log_level::info, "dropped files: {}", list.paths[0]);
         if (list.count > 0 && list.paths != NULL) {
+            engine::log(engine::log_level::info, "dropped files: {}", list.paths[0]);
             droppedFile = list.paths[0];
             if (FileExists(droppedFile.c_str())) {
                 UnloadDroppedFiles(list);
