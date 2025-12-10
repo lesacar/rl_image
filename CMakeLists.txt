@@ -23,8 +23,15 @@ set(SUPPORT_FILEFORMAT_TGA ON CACHE BOOL "" FORCE)
 set(SUPPORT_FILEFORMAT_JPG ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(raylib)
+set(SRC_FILES
+    src/main.cpp
+    src/engine.cpp
+    src/timer.cpp
+    src/window.cpp
+    src/wimage.cpp
+)
 
-add_executable(rl_image src/main.cpp src/engine.cpp src/timer.cpp src/window.cpp src/wimage.cpp)
+add_executable(rl_image ${SRC_FILES})
 
 # need C++26 for <debugging>, and lvalue references in make_format_args
 if(MSVC)
@@ -33,6 +40,13 @@ if(MSVC)
         /arch:AVX2 /W4 /std:c++latest
         $<$<CONFIG:Release>:/O2>
         $<$<CONFIG:Debug>:/Od /DEBUG>
+        /MP
+
+        # needed with WIN32 to not give missing WinMain errors
+    )
+    target_link_options(rl_image PRIVATE
+        $<$<CONFIG:Release>:"LINKER:/SUBSYSTEM:WINDOWS">
+        $<$<CONFIG:Release>:"LINKER:/ENTRY:mainCRTStartup">
     )
 elseif(WIN32)
     message( FATAL_ERROR "Unsupported compiler for WIN32, consider MSVC. Aborting..." )

@@ -1,3 +1,6 @@
+// TODO: make sure resizing the window also reset's the camera target to window center
+// TODO: zoom in towards mouse instead of window center
+
 #include "raylib.h"
 #include "timer.hpp"
 #include "window.hpp"
@@ -45,9 +48,11 @@ std::string first_dropped_filepath() {
         FilePathList list = {};
         std::string droppedFile;
         list = LoadDroppedFiles();
+        engine::log(engine::log_level::info, "dropped files: {}", list.paths[0]);
         if (list.count > 0 && list.paths != NULL) {
             droppedFile = list.paths[0];
             if (FileExists(droppedFile.c_str())) {
+                UnloadDroppedFiles(list);
                 return droppedFile;
             }
         }
@@ -114,7 +119,7 @@ int main(int argc, const char* argv[]) {
             std::string dropped_filepath = first_dropped_filepath();
             if (!dropped_filepath.empty()) {
                 Image loaded = LoadImage(dropped_filepath.c_str());
-                img.set_image(loaded);           
+                img.set_image(loaded);
             }
 
             if (IsKeyPressed(KEY_F2)) {

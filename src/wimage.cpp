@@ -32,13 +32,16 @@ namespace engine {
     // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
     void working_image::set_image(Image image) {
         UnloadImage(img);
-        img = image;
+        memset(&img, 0, sizeof(Image));
+        img = ImageCopy(image);
         // also unload the temporary image to not have a memory leak
         UnloadImage(image);
+        memset(&image, 0, sizeof(Image));
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::error, "Updating working_image failed. ATTEMPTED TO UPDATE WITH:\nPIXEL_FORMAT: {}\nRESOLUTION: ({}x{})", img.format, img.width, img.height);
         }
         UnloadTexture(img_tex);
+        memset(&img_tex, 0, sizeof(Texture2D));
         img_tex = LoadTextureFromImage(img);
         if (!IsTextureValid(img_tex)) {
             if (IsImageValid(img)) {
