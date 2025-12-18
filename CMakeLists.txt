@@ -45,8 +45,8 @@ if(MSVC)
         # needed with WIN32 to not give missing WinMain errors
     )
     target_link_options(rl_image PRIVATE
-        $<$<CONFIG:Release>:"LINKER:/SUBSYSTEM:WINDOWS">
-        $<$<CONFIG:Release>:"LINKER:/ENTRY:mainCRTStartup">
+        $<$<CONFIG:Release>:LINKER:/SUBSYSTEM:WINDOWS>
+        $<$<CONFIG:Release>:LINKER:/ENTRY:mainCRTStartup>
     )
 elseif(WIN32)
     message( FATAL_ERROR "Unsupported compiler for WIN32, consider MSVC. Aborting..." )
