@@ -94,8 +94,22 @@ int main(int argc, const char* argv[]) {
         if (IsTextureValid(img.get_tex())) {
             // 0.1f is the strength of the zoom, since the mouse wheel move is a fixed number, e.g. every scroll know could be "2", some mice with more knobs might report it as 0.5 
             float mousey_d = GetMouseWheelMoveV().y * 0.1f;
-            window.cam.zoom += window.cam.zoom*mousey_d;
-            window.cam.zoom = std::clamp(window.cam.zoom, 0.1f, 10.0f);
+            if (mousey_d != 0.0f) { // the user scrolled the mouse wheel
+                // get the difference in camera position before and after zooming in, then restore the old camera target
+                // this way we zoom in AND keep the same pixel the camera was pointing to
+
+                // window.cam.target = GetScreenToWorld2D(GetMousePosition(), window.cam);
+                Vector2 before_zoom = GetScreenToWorld2D(GetMousePosition(), window.cam);
+
+                window.cam.zoom += window.cam.zoom*mousey_d;
+                window.cam.zoom = std::clamp(window.cam.zoom, 0.1f, 10.0f);
+
+                Vector2 after_zoom = GetScreenToWorld2D(GetMousePosition(), window.cam);
+
+                window.cam.target += before_zoom-after_zoom;
+            }
+            // engine::log(engine::log_level::info, "window.cam.target = {},{}\n", window.cam.target.x, window.cam.target.y);
+
             BeginMode2D(window.cam);
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
                 window.cam.target.x -= GetMouseDelta().x / window.cam.zoom;
@@ -112,6 +126,14 @@ int main(int argc, const char* argv[]) {
             if (IsKeyDown(KEY_DOWN)) {
                 rot -= 1.0f;
                 engine::log(engine::log_level::info, "{}", rot);
+            }
+            if (IsKeyDown(KEY_SPACE)) {
+                window.cam.target = Vector2Zero();
+            }
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                Vector2 mpos = GetMousePosition();
+                Vector2 wmpos = GetScreenToWorld2D(mpos, window.cam);
+                engine::log(engine::log_level::info, "Mouse world position: {},{}", wmpos.x,wmpos.y);
             }
 
 

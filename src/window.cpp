@@ -1,5 +1,7 @@
 #include "window.hpp"
 #include "raylib.h"
+#include "raymath.h"
+#include <cstdlib>
 #include <engine.hpp>
 #include <cstring>
 
@@ -71,9 +73,19 @@ namespace engine {
     // handle anything to do with resizing the window
     void window::resize_handler() {
         if (IsWindowResized()) {
+
+            // Vector2 old_size = Vector2{static_cast<float>(size.x),static_cast<float>(size.y)};
             size.x = GetScreenWidth();
             size.y = GetScreenHeight();
+            // Vector2 old_target = cam.target;
+            // Vector2 new_size = Vector2{static_cast<float>(size.x),static_cast<float>(size.y)};
+            // Vector2 size_diff = Vector2Subtract(new_size, old_size);
+            // cam.target = Vector2Subtract(cam.target, Vector2Scale(size_diff, 0.5f / cam.zoom));
+            cam.offset = Vector2{size.x * 0.5f, size.y * 0.5f};
+
             // log(log_level::info, "Window was resized: {{{},{}}}", size.x, size.y);
+            // log(log_level::info, "New camera target: {{{},{}}}", cam.target.x, cam.target.y);
+            // log(log_level::info, "New camera offset: {{{},{}}}", cam.offset.x, cam.offset.y);
         }
     }
 
