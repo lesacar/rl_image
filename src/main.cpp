@@ -1,5 +1,9 @@
 // TODO: make sure resizing the window also reset's the camera target to window center
 // TODO: zoom in towards mouse instead of window center
+// TODO: fix when opening an invalid image, the program won't try to load other drag and dropped files, e.g. my nasa hubble telescope image
+// TODO: use raylib or stbi's functions directly to load .jfif files (basically jpeg?), because raylib hardcodes 
+// file extensions, even if the actual format is correct, e.g. a png stored as image.txt
+// TODO: weird crash when moving the image a bit, then rapidly zooming in and out
 
 #include "raylib.h"
 #include "timer.hpp"
