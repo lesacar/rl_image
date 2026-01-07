@@ -1,6 +1,7 @@
-// TODO: fix when opening an invalid image, the program won't try to load other drag and dropped files, e.g. my nasa hubble telescope image
 // TODO: use raylib or stbi's functions directly to load .jfif files (basically jpeg?), because raylib hardcodes 
 // file extensions, even if the actual format is correct, e.g. a png stored as image.txt
+// TODO: remove is_image_present, set_image_true, and set_image_false abstractions, much easier to rely on raylib's
+// IsImageValid function
 
 #include "common_types.h"
 #include "raylib.h"
@@ -202,8 +203,10 @@ int main(int argc, const char* argv[]) {
         std::string dropped_filepath = first_dropped_filepath();
         if (!dropped_filepath.empty()) {
             Image loaded = LoadImage(dropped_filepath.c_str());
-            img.set_image(loaded);
+            img.set_image(loaded); // 1: this definitely runs if (!IsTextureValid...) and logs an error if so ?
             if (!IsTextureValid(img.get_tex())) {
+                // 2: but given an invalid image, the above line doesn't show an error, but this one does, even though
+                // it's the same texture being checked, so it probably secretly isn't??
                 engine::log(engine::log_level::error, "img.get_tex was invalid, but we just set it to a valid image!");
             }
         }

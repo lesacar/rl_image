@@ -61,7 +61,7 @@ else()
     target_compile_options(rl_image PRIVATE
         -march=x86-64-v2 -Wall -Wextra -std=c++2c
         $<$<CONFIG:Release>:-O3>
-        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:Debug>:-O0 -ggdb>
     )
 endif()
 

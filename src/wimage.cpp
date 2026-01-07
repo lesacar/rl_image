@@ -41,6 +41,10 @@ namespace engine {
         memset(&image, 0, sizeof(Image));
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::error, "Updating working_image failed. ATTEMPTED TO UPDATE WITH:\nPIXEL_FORMAT: {}\nRESOLUTION: ({}x{})", img.format, img.width, img.height);
+            w.set_image_false();
+        } else { // image was succesfully loaded/replaced
+            // this line missing took 2h to debug, 
+            w.set_image_true();
         }
         UnloadTexture(img_tex);
         memset(&img_tex, 0, sizeof(Texture2D));
