@@ -21,6 +21,10 @@ set(SUPPORT_AUTOMATION_EVENTS OFF CACHE BOOL "" FORCE)
 set(SUPPORT_FILEFORMAT_BMP ON CACHE BOOL "" FORCE)
 set(SUPPORT_FILEFORMAT_TGA ON CACHE BOOL "" FORCE)
 set(SUPPORT_FILEFORMAT_JPG ON CACHE BOOL "" FORCE)
+set(GLFW_LINUX_ENABLE_X11 OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_WAYLAND ON CACHE BOOL "" FORCE)
+set(OPENGL_VERSION 4.3 CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(raylib)
 set(SRC_FILES
@@ -36,6 +40,7 @@ add_executable(rl_image ${SRC_FILES})
 # need C++26 for <debugging>, and lvalue references in make_format_args
 if(MSVC)
     # c++latest should be C++26
+    # i know i will have avx2 on my windows machine
     target_compile_options(rl_image PRIVATE
         /arch:AVX2 /W4 /std:c++latest
         $<$<CONFIG:Release>:/O2>
@@ -52,8 +57,9 @@ elseif(WIN32)
     message( FATAL_ERROR "Unsupported compiler for WIN32, consider MSVC. Aborting..." )
 else()
     # c++2c should be c++26
+    # laptop doesn't have avx or avx2
     target_compile_options(rl_image PRIVATE
-        -mavx2 -Wall -Wextra -std=c++2c
+        -march=x86-64-v2 -Wall -Wextra -std=c++2c
         $<$<CONFIG:Release>:-O3>
         $<$<CONFIG:Debug>:-O0 -g>
     )

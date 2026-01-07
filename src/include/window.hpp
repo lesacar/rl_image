@@ -13,9 +13,10 @@ namespace engine {
         public:
             Vector2 mouse_pos_last_frame;
             Vector2 mouse_pos_current_frame;
-            std::string name;
             engine::vec2<int> size{};
+            bool show_fps = false; // actual FPS draw handled in Frame::~Frame() to make sure the FPS is always on top
             Camera2D cam = {};
+            std::string name;
 
             window() = delete;
             window(engine::vec2<int> size, std::string_view name);
@@ -32,6 +33,9 @@ namespace engine {
             bool is_image_present();
             void set_image_true();
             void set_image_false();
+            bool toggle_show_fps();
+            bool toggle_show_fps(bool new_show_fps);
+            
 
             // pass argc and argv into the window
             void append_cli_args(size_t argc, const char* argv[]);

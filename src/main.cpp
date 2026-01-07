@@ -1,10 +1,8 @@
-// TODO: make sure resizing the window also reset's the camera target to window center
-// TODO: zoom in towards mouse instead of window center
 // TODO: fix when opening an invalid image, the program won't try to load other drag and dropped files, e.g. my nasa hubble telescope image
 // TODO: use raylib or stbi's functions directly to load .jfif files (basically jpeg?), because raylib hardcodes 
 // file extensions, even if the actual format is correct, e.g. a png stored as image.txt
-// TODO: weird crash when moving the image a bit, then rapidly zooming in and out
 
+#include "common_types.h"
 #include "raylib.h"
 #include "timer.hpp"
 #include "window.hpp"
@@ -16,11 +14,25 @@
 #include <string>
 #include <string_view>
 
+#ifdef _WIN32
 #pragma warning(push, 0)
 #pragma warning(disable: 4996 4267 4244 4005 4018 4101 4189 4456 4457 4458 4459 4505 4701 4703)
+#endif // _WIN32
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif // __GNUC__
+
 #define RAYGUI_IMPLEMENTATION
 #include <raygui.h>
+#ifdef _WIN32
 #pragma warning(pop)
+#endif // _WIN32
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif // __GNUC__
 
 #include <engine.hpp>
 
@@ -43,6 +55,9 @@ Frame::Frame(engine::window& w) : window(w) {
 
 Frame::~Frame() {
     window.mouse_pos_last_frame = window.mouse_pos_current_frame;
+    if (window.show_fps) {
+        DrawFPS(0, 0);
+    }
     EndDrawing();
 }
 
@@ -87,8 +102,7 @@ int main(int argc, const char* argv[]) {
     window.cam.offset = Vector2Divide(ws, halfer);
     float rot = 0.0f;
 
-    engine::log(engine::log_level::info, "window.cam.rotation: {}", window.cam.rotation);
-
+    // engine::log(engine::log_level::info, "window.cam.rotation: {}", window.cam.rotation);
 
     while (!window.should_close()) {
         Frame frame(window);
@@ -120,9 +134,10 @@ int main(int argc, const char* argv[]) {
                 window.cam.target.y -= GetMouseDelta().y / window.cam.zoom;
                 // engine::log(engine::log_level::info, "{},{}", window.cam.target.x, window.cam.target.y);
             }
+            /*
             if (mousey_d != 0) {
                 engine::log(engine::log_level::info, "{}", window.cam.zoom);
-            }
+            } */
             if (IsKeyDown(KEY_UP)) {
                 rot += 1.0f;
                 engine::log(engine::log_level::info, "{}", rot);
@@ -140,13 +155,6 @@ int main(int argc, const char* argv[]) {
                 engine::log(engine::log_level::info, "Mouse world position: {},{}", wmpos.x,wmpos.y);
             }
 
-
-            // if an image has been drag and dropped to the window, set it, if the dropped file wasn't a valid image, the old image will also be removed, black screen until valid image is provided
-            std::string dropped_filepath = first_dropped_filepath();
-            if (!dropped_filepath.empty()) {
-                Image loaded = LoadImage(dropped_filepath.c_str());
-                img.set_image(loaded);
-            }
 
             if (IsKeyPressed(KEY_F2)) {
                 if (IsWindowState(FLAG_VSYNC_HINT)) {
@@ -181,9 +189,28 @@ int main(int argc, const char* argv[]) {
             engine::DrawTextureMidpoint(img.get_tex(), Vector2Zero(), rot);
             EndMode2D();
         } else { // no image selected
+            std::string_view placeholder_text = "Drag and Drop any image to display it";
+            engine::vec2<int> ph_pos = {};
+            Vector2 ph_size = MeasureTextEx(GetFontDefault(), placeholder_text.data(), 24, 0);
+            ph_pos.x = static_cast<int>(ph_size.x)/2 + window.size.x/2;
+            ph_pos.y = static_cast<int>(ph_size.y)/2 + window.size.y/2;
+            DrawText(placeholder_text.data(), ph_pos.x, ph_pos.y, 24, GREEN);
             // draw some kind of file picker for an image or ask the user to dragndrop
         }
-        DrawFPS(0, 0);
+
+        // if an image has been drag and dropped to the window, set it, if the dropped file wasn't a valid image, the old image will also be removed, black screen until valid image is provided
+        std::string dropped_filepath = first_dropped_filepath();
+        if (!dropped_filepath.empty()) {
+            Image loaded = LoadImage(dropped_filepath.c_str());
+            img.set_image(loaded);
+            if (!IsTextureValid(img.get_tex())) {
+                engine::log(engine::log_level::error, "img.get_tex was invalid, but we just set it to a valid image!");
+            }
+        }
+        
+        if (IsKeyPressed(KEY_F3)) {
+            window.toggle_show_fps();
+        }
     }
     return 0;
 }

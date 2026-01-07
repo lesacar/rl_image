@@ -13,7 +13,7 @@
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
 namespace global {
     inline bool windowShouldClose = false;
-    inline std::array<std::string_view, 2> image_filetypes = { ".png", ".jpg" };
+    inline std::array<std::string_view, 4> image_filetypes = { ".png", ".jpg", ".jfif", ".jpeg" };
 }
 
 namespace engine {

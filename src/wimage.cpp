@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <cstring>
 #include <engine.hpp>
 #include <utility>
 
@@ -6,6 +7,7 @@ namespace engine {
     Texture2D working_image::get_tex() {
         if (!w.is_image_present()) {
             Texture2D empty{};
+            engine::log(log_level::warning, "working_image returned an empty texture!");
             return empty;
         }
         if (!IsTextureValid(img_tex)) {
@@ -43,13 +45,16 @@ namespace engine {
         UnloadTexture(img_tex);
         memset(&img_tex, 0, sizeof(Texture2D));
         img_tex = LoadTextureFromImage(img);
+        image_too_big_for_gpu = false;
         if (!IsTextureValid(img_tex)) {
             if (IsImageValid(img)) {
                 image_too_big_for_gpu = true;
                 engine::log(engine::log_level::warning, "Image is too large for GPU, can't use hardware acceleration");
             }
             engine::log(engine::log_level::error, "Couldn't create GPU texture from image when setting new image");
+            return;
         }
+        engine::log(engine::log_level::info, "Succesfully loaded new image, it should be displaying?");
     }
 
     working_image::working_image(engine::window& w) : w(w) {

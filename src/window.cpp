@@ -136,4 +136,14 @@ namespace engine {
     void window::set_image_false() {
         has_working_image = false;
     }
+
+    bool window::toggle_show_fps() {
+        show_fps = !show_fps;
+        return show_fps;
+    }
+
+    bool window::toggle_show_fps(bool new_show_fps) {
+        show_fps =  new_show_fps;
+        return show_fps;
+    }
 }
