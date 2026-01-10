@@ -8,10 +8,8 @@
 #include "timer.hpp"
 #include "window.hpp"
 #include <algorithm>
-#include <cmath>
 #include <cstdlib>
-#include <ranges>
-#include <raymath.h>
+#include <print>
 #include <string>
 #include <string_view>
 
@@ -23,10 +21,12 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif // __GNUC__
 
 #define RAYGUI_IMPLEMENTATION
 #include <raygui.h>
+#include <raymath.h>
 #ifdef _WIN32
 #pragma warning(pop)
 #endif // _WIN32
@@ -46,6 +46,7 @@ public:
     Frame(engine::window& w);
     ~Frame();
 };
+
 
 Frame::Frame(engine::window& w) : window(w) {
     BeginDrawing();
@@ -203,6 +204,12 @@ int main(int argc, const char* argv[]) {
         std::string dropped_filepath = first_dropped_filepath();
         if (!dropped_filepath.empty()) {
             Image loaded = LoadImage(dropped_filepath.c_str());
+            if (!IsImageValid(loaded)) { // image might be vald but not an official raylib format
+                bool success = engine::try_unsupported_image_load(loaded, dropped_filepath);
+                if (!success) {
+                    engine::log(engine::log_level::warning, "Image {} wasn't loaded by raylib or with a custom format!", dropped_filepath);
+                }
+            }
             img.set_image(loaded); // 1: this definitely runs if (!IsTextureValid...) and logs an error if so ?
             if (!IsTextureValid(img.get_tex())) {
                 // 2: but given an invalid image, the above line doesn't show an error, but this one does, even though

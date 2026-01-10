@@ -62,4 +62,6 @@ namespace engine {
 
     void DrawTextureMidpoint(Texture2D tex, Vector2 point, float rotation);
 
+    // returns true if the image was loaded
+    bool try_unsupported_image_load(Image& loaded, const std::string& dropped_filepath);
 }   // namespace engine
