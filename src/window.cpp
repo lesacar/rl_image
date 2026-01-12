@@ -1,9 +1,14 @@
 #include "window.hpp"
 #include "raylib.h"
 #include "raymath.h"
+#include <algorithm>
 #include <cstdlib>
 #include <engine.hpp>
 #include <cstring>
+
+// Window resize constants
+constexpr int DISPLAY_MARGIN = 100;          // Margin from screen edges
+constexpr engine::vec2<int> MIN_WINDOW_SIZE{400, 240};
 
 namespace engine {
     window::window(vec2<int> size, std::string_view name) : name(name), size(size)
@@ -127,15 +132,6 @@ namespace engine {
         CloseWindow();
     }
 
-    bool window::is_image_present() {
-        return has_working_image;
-    }
-    void window::set_image_true() {
-        has_working_image = true;
-    }
-    void window::set_image_false() {
-        has_working_image = false;
-    }
 
     bool window::toggle_show_fps() {
         show_fps = !show_fps;
@@ -145,5 +141,77 @@ namespace engine {
     bool window::toggle_show_fps(bool new_show_fps) {
         show_fps =  new_show_fps;
         return show_fps;
+    }
+
+    bool window::resize_to_fit_image(const Image& img) {
+        if (!IsImageValid(img)) {
+            engine::log(engine::log_level::error, "Cannot resize window to invalid image");
+            return false;
+        }
+
+        engine::log(engine::log_level::info, "Image dimensions: {}x{}", img.width, img.height);
+
+        // Get display bounds
+        engine::vec2<int> display_size{
+            GetMonitorWidth(GetCurrentMonitor()),
+            GetMonitorHeight(GetCurrentMonitor())
+        };
+
+        // Calculate maximum window size (display minus margin)
+        const int max_window_width = display_size.x - DISPLAY_MARGIN;
+        const int max_window_height = display_size.y - DISPLAY_MARGIN;
+
+        // Calculate scale to fit image in available window area
+        float width_ratio = static_cast<float>(max_window_width) / img.width;
+        float height_ratio = static_cast<float>(max_window_height) / img.height;
+        float scale = std::min(width_ratio, height_ratio);
+
+        // Clamp scale: maximum 1.0 (pixel-perfect), minimum 0.1
+        scale = std::clamp(scale, 0.1f, 1.0f);
+
+        // Calculate window size needed (image × scale)
+        engine::vec2<int> window_size{
+            static_cast<int>(img.width * scale),
+            static_cast<int>(img.height * scale)
+        };
+
+        // Clamp to minimum window size
+        window_size.x = std::max(window_size.x, MIN_WINDOW_SIZE.x);
+        window_size.y = std::max(window_size.y, MIN_WINDOW_SIZE.y);
+
+        engine::log(engine::log_level::info,
+                   "Scale: {:.2f}, Window size: {}x{}",
+                   scale, window_size.x, window_size.y);
+
+        // Get current window size before resize
+        engine::vec2<int> current_size{GetScreenWidth(), GetScreenHeight()};
+        engine::log(engine::log_level::info, "Current render area: {}x{}",
+                   current_size.x, current_size.y);
+
+        // Resize window
+        SetWindowSize(window_size.x, window_size.y);
+        size = window_size;
+
+        // Get new render area size (should match our calculated render_size)
+        engine::vec2<int> new_render_size{GetScreenWidth(), GetScreenHeight()};
+
+        // Center on monitor
+        center_to_monitor();
+
+        // Reset camera for new image with calculated scale
+        cam.target = Vector2Zero();
+        cam.zoom = scale;
+        // Update camera offset immediately for new window size
+        // Use actual render area size (GetScreenWidth/Height) not calculated window_size
+        cam.offset = Vector2{static_cast<float>(new_render_size.x) * 0.5f,
+                            static_cast<float>(new_render_size.y) * 0.5f};
+
+        engine::log(engine::log_level::info,
+                   "Window resized to: {}x{}, render area: {}x{} (image: {}x{}), camera zoom: {:.2f}",
+                   window_size.x, window_size.y,
+                   new_render_size.x, new_render_size.y,
+                   img.width, img.height, scale);
+
+        return true;
     }
 }

@@ -9,7 +9,6 @@ namespace engine {
     class window {
         private:
             std::vector<std::string_view> cli_args;
-            bool has_working_image = false;
         public:
             Vector2 mouse_pos_last_frame;
             Vector2 mouse_pos_current_frame;
@@ -30,11 +29,11 @@ namespace engine {
             void set_resize_to(engine::vec2<int> newSize);
             void center_to_monitor();
             void resize_handler();
-            bool is_image_present();
-            void set_image_true();
-            void set_image_false();
             bool toggle_show_fps();
             bool toggle_show_fps(bool new_show_fps);
+
+            // Resize window to fit image dimensions
+            bool resize_to_fit_image(const Image& img);
             
 
             // pass argc and argv into the window

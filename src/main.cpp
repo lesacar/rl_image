@@ -7,6 +7,7 @@
 #include "raylib.h"
 #include "timer.hpp"
 #include "window.hpp"
+#include "frame.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <print>
@@ -37,49 +38,24 @@
 
 #include <engine.hpp>
 
-// just an RAII wrapper for some gpu calls you'd want on every frame
-class Frame {
-private:
-    engine::window& window;
-public:
-    Frame() = delete;
-    Frame(engine::window& w);
-    ~Frame();
-};
-
-
-Frame::Frame(engine::window& w) : window(w) {
-    BeginDrawing();
-    ClearBackground(BLACK);
-    window.resize_handler();
-    window.mouse_pos_current_frame = GetMousePosition();
-}
-
-Frame::~Frame() {
-    window.mouse_pos_last_frame = window.mouse_pos_current_frame;
-    if (window.show_fps) {
-        DrawFPS(0, 0);
-    }
-    EndDrawing();
-}
 
 // process every file drag and dropped to the window, but only extract the first valid filepath, ignore all the rest, use only when you expect only one file
-std::string first_dropped_filepath() {
-    if (IsFileDropped()) {
-        FilePathList list = {};
-        std::string droppedFile;
-        list = LoadDroppedFiles();
-        if (list.count > 0 && list.paths != NULL) {
-            engine::log(engine::log_level::info, "dropped files: {}", list.paths[0]);
-            droppedFile = list.paths[0];
-            if (FileExists(droppedFile.c_str())) {
-                UnloadDroppedFiles(list);
-                return droppedFile;
-            }
-        }
-        UnloadDroppedFiles(list);
+std::optional<std::string> first_dropped_filepath() {
+    if (!IsFileDropped()) {
+        return std::nullopt;
     }
-    return std::string{};
+
+    FilePathList list = LoadDroppedFiles();
+    if (list.count == 0 || list.paths == NULL) {
+        UnloadDroppedFiles(list);
+        return std::nullopt;
+    }
+
+    std::string droppedFile = list.paths[0];
+    engine::log(engine::log_level::info, "dropped file: {}", droppedFile);
+
+    UnloadDroppedFiles(list);
+    return droppedFile;
 }
 
 int main(int argc, const char* argv[]) {
@@ -111,7 +87,9 @@ int main(int argc, const char* argv[]) {
         ws.x = static_cast<float>(window.size.x);
         ws.y = static_cast<float>(window.size.y);
 
-        if (IsTextureValid(img.get_tex())) {
+        std::optional<Texture2D> texture_opt = img.get_tex();
+        if (texture_opt.has_value()) {
+            Texture2D texture = texture_opt.value();
             // 0.1f is the strength of the zoom, since the mouse wheel move is a fixed number, e.g. every scroll know could be "2", some mice with more knobs might report it as 0.5 
             float mousey_d = GetMouseWheelMoveV().y * 0.1f;
             if (mousey_d != 0.0f) { // the user scrolled the mouse wheel
@@ -173,48 +151,67 @@ int main(int argc, const char* argv[]) {
                 Image clip_img = GetClipboardImage();
                 const char* p_clipboard_text = GetClipboardText();
                 std::string_view ctext;
+
                 if (p_clipboard_text) {
                     ctext = p_clipboard_text;
                     if (FileExists(ctext.data())) {
-                        clip_img = LoadImage(ctext.data());
+                        // Try to load from filepath in clipboard
+                        std::optional<Image> file_img = engine::load_image_from_path(ctext);
+                        if (file_img.has_value()) {
+                            clip_img = file_img.value();
+                        }
                     }
                 }
+
                 if (!ctext.empty()) {
                     engine::log(engine::log_level::info, "Clipboard text: {}", ctext);
                 }
+
                 if (IsImageValid(clip_img)) {
+                    // set_image() will resize window internally if successful
                     img.set_image(clip_img);
                 }
             }
 
 
-            engine::DrawTextureMidpoint(img.get_tex(), Vector2Zero(), rot);
+            engine::DrawTextureMidpoint(texture, Vector2Zero(), rot);
             EndMode2D();
         } else { // no image selected
             std::string_view placeholder_text = "Drag and Drop any image to display it";
             engine::vec2<int> ph_pos = {};
-            Vector2 ph_size = MeasureTextEx(GetFontDefault(), placeholder_text.data(), 24, 0);
-            ph_pos.x = static_cast<int>(ph_size.x)/2 + window.size.x/2;
-            ph_pos.y = static_cast<int>(ph_size.y)/2 + window.size.y/2;
-            DrawText(placeholder_text.data(), ph_pos.x, ph_pos.y, 24, GREEN);
+            Vector2 ph_size = MeasureTextEx(GetFontDefault(), placeholder_text.data(), 24, 1.0f);
+            // Center text: use current RENDER area size (accounts for HiDPI)
+            int render_width = GetRenderWidth();
+            int render_height = GetRenderHeight();
+            ph_pos.x = render_width/2 - static_cast<int>(ph_size.x)/2;
+            ph_pos.y = render_height/2 - static_cast<int>(ph_size.y)/2;
+
+            // Debug: log positioning info (simplified to avoid MSVC format issues)
+            engine::log(engine::log_level::info,
+                       "Text position: render {}x{}, text pos {}x{}",
+                       render_width, render_height, ph_pos.x, ph_pos.y);
+
+            // Draw text centered using DrawTextPro for precise positioning
+            Vector2 origin = {0, 0}; // Top-left origin
+            DrawTextPro(GetFontDefault(), placeholder_text.data(),
+                       Vector2{static_cast<float>(ph_pos.x), static_cast<float>(ph_pos.y)},
+                       origin, 0.0f, 24, 1.0f, GREEN);
             // draw some kind of file picker for an image or ask the user to dragndrop
         }
 
         // if an image has been drag and dropped to the window, set it, if the dropped file wasn't a valid image, the old image will also be removed, black screen until valid image is provided
-        std::string dropped_filepath = first_dropped_filepath();
-        if (!dropped_filepath.empty()) {
-            Image loaded = LoadImage(dropped_filepath.c_str());
-            if (!IsImageValid(loaded)) { // image might be vald but not an official raylib format
-                bool success = engine::try_unsupported_image_load(loaded, dropped_filepath);
-                if (!success) {
-                    engine::log(engine::log_level::warning, "Image {} wasn't loaded by raylib or with a custom format!", dropped_filepath);
-                }
-            }
-            img.set_image(loaded); // 1: this definitely runs if (!IsTextureValid...) and logs an error if so ?
-            if (!IsTextureValid(img.get_tex())) {
-                // 2: but given an invalid image, the above line doesn't show an error, but this one does, even though
-                // it's the same texture being checked, so it probably secretly isn't??
-                engine::log(engine::log_level::error, "img.get_tex was invalid, but we just set it to a valid image!");
+        std::optional<std::string> dropped_filepath_opt = first_dropped_filepath();
+        if (dropped_filepath_opt.has_value()) {
+            std::string dropped_filepath = dropped_filepath_opt.value();
+            // Try to load image using new std::optional API
+            std::optional<Image> loaded_opt = engine::load_image_from_path(dropped_filepath);
+
+            if (!loaded_opt.has_value()) {
+                engine::log(engine::log_level::warning, "Image {} wasn't loaded by raylib or with a custom format!", dropped_filepath);
+            } else {
+                Image loaded_img = loaded_opt.value();
+                // set_image() will resize window internally if successful
+                img.set_image(loaded_img);
             }
         }
         

@@ -4,77 +4,88 @@
 #include <utility>
 
 namespace engine {
-    Texture2D working_image::get_tex() {
-        if (!w.is_image_present()) {
-            Texture2D empty{};
-            engine::log(log_level::warning, "working_image returned an empty texture!");
-            return empty;
-        }
+    std::optional<Texture2D> working_image::get_tex() const {
         if (!IsTextureValid(img_tex)) {
-            log(log_level::error, "Returned invalid texture of working image");
-            log(log_level::error, "C++: window.is_image_present() returned true but the texture was invalid, unreachable...");
-            std::unreachable();
+            engine::log(log_level::warning, "working_image::get_tex() returned nullopt - texture invalid");
+            return std::nullopt;
         }
         return img_tex;
     }
 
-    Image working_image::get_image() {
-        if (!w.is_image_present()) {
-            Image empty{};
-            return empty;
-        }
+    std::optional<Image> working_image::get_image() const {
         if (!IsImageValid(img)) {
-            log(log_level::error, "Returned invalid image of working image");
-            log(log_level::error, "C++: window.is_image_present() returned true but the image was invalid, unreachable...");
-            std::unreachable();
+            engine::log(log_level::warning, "working_image::get_image() returned nullopt - image invalid");
+            return std::nullopt;
         }
         return img;
     }
 
-    // after modifying the image externaly (e.g. rotating), save the updated version, crash on fail
-    void working_image::set_image(Image image) {
-        UnloadImage(img);
+    // after modifying the image externaly (e.g. rotating), save the updated version
+    bool working_image::set_image(Image image) {
+        // Unload current image if valid
+        if (IsImageValid(img)) {
+            UnloadImage(img);
+        }
         memset(&img, 0, sizeof(Image));
+
+        // Copy the new image
         img = ImageCopy(image);
-        // also unload the temporary image to not have a memory leak
-        UnloadImage(image);
+
+        // Unload the source image (it was passed by value, so it's a copy)
+        if (IsImageValid(image)) {
+            UnloadImage(image);
+        }
         memset(&image, 0, sizeof(Image));
+
+        // Image validity check
         if (!IsImageValid(img)) {
             engine::log(engine::log_level::error, "Updating working_image failed. ATTEMPTED TO UPDATE WITH:\nPIXEL_FORMAT: {}\nRESOLUTION: ({}x{})", img.format, img.width, img.height);
-            w.set_image_false();
-        } else { // image was succesfully loaded/replaced
-            // this line missing took 2h to debug, 
-            w.set_image_true();
+            return false;
         }
-        UnloadTexture(img_tex);
+
+        // Unload current texture if valid
+        if (IsTextureValid(img_tex)) {
+            UnloadTexture(img_tex);
+        }
         memset(&img_tex, 0, sizeof(Texture2D));
+
+        // Try to create GPU texture
         img_tex = LoadTextureFromImage(img);
         image_too_big_for_gpu = false;
+
         if (!IsTextureValid(img_tex)) {
-            if (IsImageValid(img)) {
-                image_too_big_for_gpu = true;
-                engine::log(engine::log_level::warning, "Image is too large for GPU, can't use hardware acceleration");
-            }
-            engine::log(engine::log_level::error, "Couldn't create GPU texture from image when setting new image");
-            return;
+            // Texture creation failed (could be size, memory, format, etc.)
+            image_too_big_for_gpu = true;
+            engine::log(engine::log_level::warning, "GPU texture creation failed (image may be too large or unsupported format)");
+            // Still return true because image is valid, just texture failed
+        } else {
+            engine::log(engine::log_level::info, "Successfully loaded new image with GPU texture");
         }
-        engine::log(engine::log_level::info, "Succesfully loaded new image, it should be displaying?");
+
+        // Resize window to fit the new image (if image is valid)
+        w.resize_to_fit_image(img);
+
+        return true;
     }
 
     working_image::working_image(engine::window& w) : w(w) {
-        img = image_was_provided(w);
-        if (!IsImageValid(img)) {
+        std::optional<Image> loaded_img = load_image(w);
+        if (!loaded_img.has_value()) {
             engine::log(engine::log_level::info, "engine::working_image class doesn't have a valid image loaded");
             img = {};
             img_tex = {};
             return;
         }
+
+        img = loaded_img.value();
         img_tex = LoadTextureFromImage(img);
         if (!IsTextureValid(img_tex)) {
-            engine::log(engine::log_level::error, "Couldn't create GPU texture from image");
+            engine::log(engine::log_level::warning, "GPU texture creation failed (image may be too large or unsupported format)");
             image_too_big_for_gpu = true;
         }
-        w.set_image_true();
+
+        // Resize window to fit the initial image
+        w.resize_to_fit_image(img);
     }
     working_image::~working_image() { 
         if (IsImageValid(img)) {

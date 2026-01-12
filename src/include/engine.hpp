@@ -5,9 +5,25 @@
 #include <raylib.h>
 #include <string_view>
 #include <array>
+#include <optional>
 #include <common_types.h>
 #include <window.hpp>
 #include <wimage.hpp>
+
+// Debug-only crash on nullopt dereference
+#ifdef NDEBUG
+#define ENGINE_ASSERT_OPTIONAL(opt, message) \
+    if (!(opt).has_value()) { \
+        engine::log(engine::log_level::error, "{}", (message)); \
+    }
+#else
+#define ENGINE_ASSERT_OPTIONAL(opt, message) \
+    if (!(opt).has_value()) { \
+        engine::log(engine::log_level::error, "{} at {}:{} in {}", (message), __FILE__, __LINE__, __func__); \
+        std::terminate(); \
+    }
+#endif
+
 
 // global variables that will (potentially) be read by every single file
 // make sure to INLINE everything, 2 different translation units NEED to have the same variable
@@ -18,14 +34,20 @@ namespace global {
 
 namespace engine {
     // this should always be descending, since it's used by an algorithm that expects sorted values
-    inline constexpr std::array<vec2<int>, 6> various_16_9_resolutions =
+    inline constexpr std::array<vec2<int>, 12> various_16_9_resolutions =
     {{
-         {2560,1440},
-         {1920,1080},
-         {1600,900},
-         {1280,720},
-         {960,540},
-         {640,360},
+         {7680, 4320},   // 8K UHD
+         {5120, 2880},   // 5K
+         {3840, 2160},   // 4K UHD
+         {3440, 1440},   // UWQHD (21:9)
+         {2560, 1440},   // QHD
+         {1920, 1080},   // FHD
+         {1600, 900},    // HD+
+         {1366, 768},    // WXGA
+         {1280, 720},    // HD
+         {1024, 576},    // WSVGA
+         {960, 540},     // qHD
+         {640, 360},     // nHD
      }};
 
 
@@ -58,10 +80,11 @@ namespace engine {
         }
 
     bool is_supported_image_extension(std::string_view img_path);
-    [[nodiscard("\'Tried to discard image\'")]] Image image_was_provided(window& w);
+    [[nodiscard("Tried to discard loaded image")]] std::optional<Image> load_image(window& w);
+    [[nodiscard("Tried to discard loaded image")]] std::optional<Image> load_image_from_path(std::string_view path);
 
     void DrawTextureMidpoint(Texture2D tex, Vector2 point, float rotation);
 
-    // returns true if the image was loaded
-    bool try_unsupported_image_load(Image& loaded, const std::string& dropped_filepath);
+    // returns optional image if loaded successfully from unsupported format
+    [[nodiscard("Tried to discard custom format image")]] std::optional<Image> load_unsupported_image(const std::string& dropped_filepath);
 }   // namespace engine

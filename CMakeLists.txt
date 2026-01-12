@@ -33,6 +33,7 @@ set(SRC_FILES
     src/timer.cpp
     src/window.cpp
     src/wimage.cpp
+    src/frame.cpp
 )
 
 add_executable(rl_image ${SRC_FILES})
