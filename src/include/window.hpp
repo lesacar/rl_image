@@ -14,6 +14,7 @@ namespace engine {
             Vector2 mouse_pos_current_frame;
             engine::vec2<int> size{};
             bool show_fps = false; // actual FPS draw handled in Frame::~Frame() to make sure the FPS is always on top
+            bool borderless = false; // borderless window state
             Camera2D cam = {};
             std::string name;
 
@@ -32,8 +33,11 @@ namespace engine {
             bool toggle_show_fps();
             bool toggle_show_fps(bool new_show_fps);
 
-            // Resize window to fit image dimensions
-            bool resize_to_fit_image(const Image& img);
+            // Toggle borderless window state (optional image for resize when toggling off)
+            bool toggle_borderless(const Image* img = nullptr);
+
+            // Resize window to fit image dimensions (optional skip borderless check)
+            bool resize_to_fit_image(const Image& img, bool skip_borderless_check = false);
             
 
             // pass argc and argv into the window

@@ -1,5 +1,5 @@
-// TODO: use raylib or stbi's functions directly to load .jfif files (basically jpeg?), because raylib hardcodes 
-// file extensions, even if the actual format is correct, e.g. a png stored as image.txt
+// TODO: extend load_unsupported_image to other formats that raylib doesn't support, but stbi does (currently just jfif), eventualy replace raylib LoadImage
+// with LoadImageFromMemory for every single format
 // TODO: remove is_image_present, set_image_true, and set_image_false abstractions, much easier to rely on raylib's
 // IsImageValid function
 
@@ -10,7 +10,6 @@
 #include "frame.hpp"
 #include <algorithm>
 #include <cstdlib>
-#include <print>
 #include <string>
 #include <string_view>
 
@@ -142,6 +141,15 @@ int main(int argc, const char* argv[]) {
                 }
                 else {
                     SetWindowState(FLAG_VSYNC_HINT);
+                }
+            }
+
+            if (IsKeyPressed(KEY_F11)) {
+                std::optional<Image> current_image = img.get_image();
+                if (current_image.has_value()) {
+                    window.toggle_borderless(&current_image.value());
+                } else {
+                    window.toggle_borderless(nullptr);
                 }
             }
 
